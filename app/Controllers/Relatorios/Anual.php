@@ -5,7 +5,7 @@ use App\Controllers\BaseController;
 use App\Services\Relatorios\AnualService;
 
 class Anual extends BaseController {
-  private $relatorioService;
+      private $relatorioService;
 
   public function __construct() {
     $this->relatorioService = new AnualService();
