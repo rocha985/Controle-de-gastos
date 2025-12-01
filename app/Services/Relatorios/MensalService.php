@@ -4,170 +4,148 @@ namespace App\Services\Relatorios;
 use App\Repositories\RelatorioTransacaoRepository;
 
 class MensalService {
-  private $relatorioRepository;
+    private $relatorioRepository;
 
-  public function __construct() {
-    $this->relatorioRepository = new RelatorioTransacaoRepository();
-  }
-
-  public function gerarRelatorio(int $usuarioId, string $ano, string $mes): array {
-    $diasNoMes = cal_days_in_month(CAL_GREGORIAN, $mes, $ano);
-
-    $dadosBrutos      = $this->relatorioRepository->getBalancoDiarioPorMes($usuarioId, $ano, $mes);
-    $detalhesDespesas = $this->relatorioRepository->getTotaisPorCategoriaMes($usuarioId, $ano, $mes);
-    $top5             = $this->relatorioRepository->getTop5Despesas($usuarioId, $ano, $mes);
-    $gastosDiarios    = $this->relatorioRepository->getGastosDiariosPorCategoria($usuarioId, $ano, $mes);
-    $saldoInicialRows = $this->relatorioRepository->getSaldoInicialDoMes($usuarioId, $ano, $mes);
-
-    list(
-      $dadosProcessados,
-      $graficoSaldo,
-      $totalReceita,
-      $totalDespesa
-    ) = $this->processarBalancoDiario($dadosBrutos, $diasNoMes);
-
-    list($rankLabels, $rankValores) = $this->processarRankingTop5($top5);
-
-    $stackedDatasets = $this->processarGastosDiariosPorCategoria($gastosDiarios, $diasNoMes);
-
-    list($saldoInicial, $saldoPorDia) = $this->calcularSaldoPatrimonioAcumulado(
-      $saldoInicialRows,
-      $dadosProcessados,
-      $diasNoMes
-    );
-
-    $graficoLabels = range(1, $diasNoMes);
-
-    return [
-      "filtroAno"       => $ano,
-      "filtroMes"       => $mes,
-
-      "receita"         => $totalReceita,
-      "despesa"         => $totalDespesa,
-      "saldo"           => $totalReceita - $totalDespesa,
-
-      "lista"           => $detalhesDespesas,
-      "totalBase"       => $totalDespesa,
-
-      "graficoLabels"   => $graficoLabels,
-      "graficoSaldo"    => $graficoSaldo,
-
-      "rankLabels"      => $rankLabels,
-      "rankValores"     => $rankValores,
-
-      "stackedLabels"   => range(1, $diasNoMes),
-      "stackedDatasets" => $stackedDatasets,
-
-      "saldoInicial"    => $saldoInicial,
-      "labels"          => range(1, $diasNoMes),
-      "saldoPorDia"     => $saldoPorDia,
-    ];
-  }
-
-  protected function processarBalancoDiario(array $dadosBrutos, int $diasNoMes): array {
-    $dadosProcessados = [];
-    for ($d = 1; $d <= $diasNoMes; $d++) {
-      $dadosProcessados[$d] = ["receita" => 0.0, "despesa" => 0.0];
+    public function __construct() {
+        $this->relatorioRepository = new RelatorioTransacaoRepository();
     }
 
-    foreach ($dadosBrutos as $item) {
-      $diaIndex = (int) $item->dia;
-      $tipo     = $item->tipo_fluxo;
-      if (isset($dadosProcessados[$diaIndex])) {
-        $dadosProcessados[$diaIndex][$tipo] = (float) $item->total;
-      }
+    public function gerarRelatorio(int $usuarioId, string $ano, string $mes): array {
+        $diasNoMes = cal_days_in_month(CAL_GREGORIAN, $mes, $ano);
+
+        $dadosBrutos      = $this->relatorioRepository->getBalancoDiarioPorMes($usuarioId, $ano, $mes);
+        $detalhesDespesas = $this->relatorioRepository->getTotaisPorCategoriaMes($usuarioId, $ano, $mes);
+        $top5             = $this->relatorioRepository->getTop5Despesas($usuarioId, $ano, $mes);
+        $gastosDiarios    = $this->relatorioRepository->getGastosDiariosPorCategoria($usuarioId, $ano, $mes);
+        $saldoInicialRows = $this->relatorioRepository->getSaldoInicialDoMes($usuarioId, $ano, $mes);
+
+        $balanco = $this->processarBalancoDiario($dadosBrutos, $diasNoMes);
+        
+        [
+            'dadosProcessados' => $dadosProcessados,
+            'graficoSaldo'     => $graficoSaldo,
+            'receita'          => $totalReceita,
+            'despesa'          => $totalDespesa
+        ] = $balanco;
+
+        $ranking = $this->processarRankingTop5($top5);
+        
+        $dadosGraficoCategoria = $this->processarGastosDiariosPorCategoria($gastosDiarios, $diasNoMes);
+
+        $patrimonio = $this->calcularSaldoPatrimonioAcumulado(
+            $saldoInicialRows,
+            $dadosProcessados,
+            $diasNoMes
+        );
+
+        $graficoLabels = range(1, $diasNoMes);
+
+        return [
+            "filtroAno"       => $ano,
+            "filtroMes"       => $mes,
+
+            "receita"         => $totalReceita,
+            "despesa"         => $totalDespesa,
+            "saldo"           => $totalReceita - $totalDespesa,
+
+            "lista"           => $detalhesDespesas,
+            "totalBase"       => $totalDespesa,
+
+            "graficoLabels"   => $graficoLabels,
+            "graficoSaldo"    => $graficoSaldo,
+
+            "rankLabels"      => $ranking['labels'],
+            "rankValores"     => $ranking['valores'],
+
+            "stackedDatasets" => $dadosGraficoCategoria['dados'],
+
+            "saldoInicial"    => $patrimonio['inicial'],
+            "saldoPorDia"     => $patrimonio['porDia'],
+        ];
     }
 
-    $graficoSaldo   = [];
-    $saldoAcumulado = 0;
-    $totalReceita   = 0;
-    $totalDespesa   = 0;
+    protected function processarBalancoDiario(array $dadosBrutos, int $diasNoMes): array {
+        $dadosProcessados = array_fill(1, $diasNoMes, ["receita" => 0.0, "despesa" => 0.0]);
 
-    for ($d = 1; $d <= $diasNoMes; $d++) {
-      $r  = $dadosProcessados[$d]["receita"];
-      $dv = $dadosProcessados[$d]["despesa"];
+        foreach ($dadosBrutos as $item) {
+            $diaIndex = (int) $item->dia;
+            if (isset($dadosProcessados[$diaIndex])) {
+                $dadosProcessados[$diaIndex][$item->tipo_fluxo] = (float) $item->total;
+            }
+        }
 
-      $totalReceita += $r;
-      $totalDespesa += $dv;
+        $graficoSaldo   = [];
+        $saldoAcumulado = 0;
+        $totalReceita   = 0;
+        $totalDespesa   = 0;
 
-      $saldoAcumulado += ($r - $dv);
-      $graficoSaldo[] = $saldoAcumulado;
+        for ($d = 1; $d <= $diasNoMes; $d++) {
+            $r = $dadosProcessados[$d]["receita"];
+            $dVal = $dadosProcessados[$d]["despesa"];
+
+            $totalReceita += $r;
+            $totalDespesa += $dVal;
+            $saldoAcumulado += ($r - $dVal);
+            $graficoSaldo[] = $saldoAcumulado;
+        }
+
+        return [
+            'dadosProcessados' => $dadosProcessados,
+            'graficoSaldo'     => $graficoSaldo,
+            'receita'          => $totalReceita,
+            'despesa'          => $totalDespesa
+        ];
     }
 
-    return [$dadosProcessados, $graficoSaldo, $totalReceita, $totalDespesa];
-  }
-
-  protected function processarRankingTop5(array $top5): array {
-    $rankLabels  = [];
-    $rankValores = [];
-
-    foreach ($top5 as $item) {
-      $rankLabels[]  = $item->categoria;
-      $rankValores[] = (float) $item->total;
+    protected function processarRankingTop5(array $top5): array {
+        return [
+            'labels'  => array_column($top5, 'categoria'),
+            'valores' => array_map('floatval', array_column($top5, 'total'))
+        ];
     }
 
-    return [$rankLabels, $rankValores];
-  }
+    protected function processarGastosDiariosPorCategoria(array $gastosDiarios, int $diasNoMes): array {
+        $categorias = array_unique(array_column($gastosDiarios, 'categoria'));
+        $matriz = array_fill_keys($categorias, array_fill(1, $diasNoMes, 0));
 
-  protected function processarGastosDiariosPorCategoria(array $gastosDiarios, int $diasNoMes): array {
-    $categoriasUnicas = [];
-    foreach ($gastosDiarios as $g) {
-      $categoriasUnicas[$g->categoria] = true;
-    }
-    $listaCategorias = array_keys($categoriasUnicas);
+        foreach ($gastosDiarios as $item) {
+            $dia = (int) $item->dia;
+            if (isset($matriz[$item->categoria][$dia])) {
+                $matriz[$item->categoria][$dia] = (float) $item->total;
+            }
+        }
 
-    $matriz = [];
-    foreach ($listaCategorias as $cat) {
-      $matriz[$cat] = array_fill(1, $diasNoMes, 0);
-    }
+        $dadosGrafico = [];
+        foreach ($matriz as $categoria => $valores) {
+            $dadosGrafico[] = [
+                "label"        => $categoria,
+                "data"         => array_values($valores),
+                "borderRadius" => 2,
+            ];
+        }
 
-    foreach ($gastosDiarios as $item) {
-      $dia = (int) $item->dia;
-      $cat = $item->categoria;
-      if (isset($matriz[$cat][$dia])) {
-        $matriz[$cat][$dia] = (float) $item->total;
-      }
-    }
-
-    $stackedDatasets = [];
-    foreach ($matriz as $categoria => $valores) {
-      $stackedDatasets[] = [
-        "label"        => $categoria,
-        "data"         => array_values($valores),
-        "borderRadius" => 2,
-      ];
+        return ['dados' => $dadosGrafico];
     }
 
-    return $stackedDatasets;
-  }
+    protected function calcularSaldoPatrimonioAcumulado(
+        array $saldoInicialRows,
+        array $dadosProcessados,
+        int $diasNoMes
+    ): array {
+        $mapaSaldo = array_column($saldoInicialRows, 'total', 'tipo_fluxo');
+        $saldoInicial = ((float) ($mapaSaldo['receita'] ?? 0)) - ((float) ($mapaSaldo['despesa'] ?? 0));
 
-  protected function calcularSaldoPatrimonioAcumulado(
-    array $saldoInicialRows,
-    array $dadosProcessados,
-    int $diasNoMes
-  ): array {
-    $receitaAntes = 0;
-    $despesaAntes = 0;
-    foreach ($saldoInicialRows as $r) {
-      if ($r->tipo_fluxo === 'receita') {
-        $receitaAntes = (float) $r->total;
-      }
+        $saldoPorDia = [];
+        $saldoAtual  = $saldoInicial;
+        
+        for ($d = 1; $d <= $diasNoMes; $d++) {
+            $saldoAtual += $dadosProcessados[$d]["receita"] - $dadosProcessados[$d]["despesa"];
+            $saldoPorDia[] = $saldoAtual;
+        }
 
-      if ($r->tipo_fluxo === 'despesa') {
-        $despesaAntes = (float) $r->total;
-      }
-
+        return [
+            'inicial' => $saldoInicial,
+            'porDia'  => $saldoPorDia
+        ];
     }
-    $saldoInicial = $receitaAntes - $despesaAntes;
-
-    $saldoPorDia = [];
-    $saldoAtual  = $saldoInicial;
-    for ($d = 1; $d <= $diasNoMes; $d++) {
-      $saldoAtual += $dadosProcessados[$d]["receita"];
-      $saldoAtual -= $dadosProcessados[$d]["despesa"];
-      $saldoPorDia[] = $saldoAtual;
-    }
-
-    return [$saldoInicial, $saldoPorDia];
-  }
 }

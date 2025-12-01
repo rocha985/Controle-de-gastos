@@ -17,7 +17,7 @@
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
-    const labels = <?php echo json_encode($labels)?>;
+    const labels = <?php echo json_encode($graficoLabels)?>;
     const saldoPorDia = <?php echo json_encode($saldoPorDia)?>;
 
     const ctx = document.getElementById('graficoSaldo').getContext('2d');

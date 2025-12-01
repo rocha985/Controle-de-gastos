@@ -8,7 +8,7 @@
 <div class="row">
     <div class="col-12 mb-4">
         <?php echo $this->include('relatorios/components/gastoAnual', [
-            'stackedLabels'   => $stackedLabels,
+            'graficoLabels'   => $graficoLabels,
             'stackedDatasets' => $stackedDatasets,
         ]) ?>
     </div>
