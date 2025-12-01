@@ -33,7 +33,7 @@
     <div class="col-12 mb-4">
         <?php echo $this->include('relatorios/components/gastoDiario', [
             'saldoInicial' => $saldoInicial,
-            'labels'       => $labels,
+            'graficoLabels'       => $graficoLabels,
             'saldoPorDia'  => $saldoPorDia,
         ]) ?>
 

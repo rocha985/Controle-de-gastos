@@ -13,7 +13,7 @@
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
-    const labels = <?php echo json_encode($stackedLabels ?? [])?>;
+    const labels = <?php echo json_encode($graficoLabels ?? [])?>;
     let datasets = <?php echo json_encode($stackedDatasets ?? [])?>;
 
     const colors = [
