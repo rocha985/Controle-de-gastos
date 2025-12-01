@@ -12,8 +12,8 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        const labels = <?php echo json_encode($graficoLabels ?? [])?>;
-        let datasets = <?php echo json_encode($stackedDatasets ?? [])?>;
+        const labels =                       <?php echo json_encode($graficoLabels ?? []) ?>;
+        let datasets =                       <?php echo json_encode($stackedDatasets ?? []) ?>;
 
 const colors = [
     '#FF6384', '#4BC0C0', '#FF9F40', '#5F9EA0',
@@ -38,6 +38,10 @@ datasets = datasets.map((ds, i) => ({
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                animation: {
+                    duration: 2000,
+                    easing: 'easeOutQuart'
+                },
                 interaction: {
                     mode: 'index',
                     intersect: false,

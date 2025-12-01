@@ -12,9 +12,9 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        const labels = <?php echo json_encode($anosLabels ?? [])?>;
-        const receitas = <?php echo json_encode($receitasAno ?? [])?>;
-        const despesas = <?php echo json_encode($despesasAno ?? [])?>;
+        const labels =                                                                   <?php echo json_encode($anosLabels ?? []) ?>;
+        const receitas =                                                                         <?php echo json_encode($receitasAno ?? []) ?>;
+        const despesas =                                                                         <?php echo json_encode($despesasAno ?? []) ?>;
 
         const ctx = document.getElementById('graficoComparativo').getContext('2d');
 
@@ -44,6 +44,10 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                animation: {
+                    duration: 2000,
+                    easing: 'easeOutQuart'
+                },
                 plugins: {
                     legend: {
                         position: 'top',
