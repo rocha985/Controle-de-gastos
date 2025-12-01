@@ -1,0 +1,22 @@
+.pagination-custom .page-item {
+  margin: 0 3px;
+}
+
+.pagination-custom .page-link {
+  border: none;
+  border-radius: 8px;
+  color: #000;
+  background-color: transparent;
+  font-weight: 500;
+  padding: 0.5rem 0.75rem;
+}
+
+.pagination-custom .page-item.active .page-link {
+  background-color: #000;
+  color: #fff;
+}
+
+.pagination-custom .page-link:focus {
+  box-shadow: none;
+  outline: none;
+}
