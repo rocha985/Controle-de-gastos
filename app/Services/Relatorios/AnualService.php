@@ -17,11 +17,11 @@ class AnualService {
 
     $dadosProcessados = $this->processarBalancoMensal($dadosBrutos);
 
-    list(
-      $totalReceitaAno,
-      $totalDespesaAno,
-      $graficoSaldo
-    ) = $this->calcularTotaisEGraficoSaldo($dadosProcessados);
+    $calculos = $this->calcularTotaisEGraficoSaldo($dadosProcessados);
+
+    $totalReceitaAno = $calculos['receita'];
+    $totalDespesaAno = $calculos['despesa'];
+    $graficoSaldo    = $calculos['grafico'];
 
     $stackedDatasets = $this->processarGastosMensaisPorCategoria($gastosMensais);
 
@@ -81,7 +81,11 @@ class AnualService {
       $totalDespesaAno += $d;
     }
 
-    return [$totalReceitaAno, $totalDespesaAno, $graficoSaldo];
+    return [
+      'receita' => $totalReceitaAno,
+      'despesa' => $totalDespesaAno,
+      'grafico' => $graficoSaldo,
+    ];
   }
 
   protected function processarGastosMensaisPorCategoria(array $gastosMensais): array {
