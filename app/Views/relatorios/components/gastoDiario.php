@@ -1,6 +1,6 @@
 <div class="card border-0 shadow-sm h-100">
   <div class="card-header bg-white border-0 pt-3">
-    <h5 class="fw-bold text-dark">Evolução Diária das Despesas (Área Empilhada)</h5>
+    <h5 class="fw-bold text-dark">Despesas Diárias</h5>
   </div>
   <div class="card-body">
     <div style="height: 350px; position: relative;">
