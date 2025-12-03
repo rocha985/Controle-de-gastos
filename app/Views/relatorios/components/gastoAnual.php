@@ -1,6 +1,6 @@
 <div class="card border-0 shadow-sm h-100">
   <div class="card-header bg-white border-0 pt-3">
-    <h5 class="fw-bold text-dark">Detalhamento Mensal por Categoria</h5>
+    <h5 class="fw-bold text-dark">Gasto Mensal</h5>
   </div>
   <div class="card-body">
     <div style="height: 400px; position: relative;">
