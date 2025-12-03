@@ -28,7 +28,7 @@
 
                 <td>
                   <span
-                    class="badge rounded-pill                                                                    <?php echo ($t->tipo_fluxo == 'receita') ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'; ?>">
+                    class="badge rounded-pill <?php echo ($t->tipo_fluxo == 'receita') ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'; ?>">
                     <?php echo $t->tipo_nome ?>
                   </span>
                 </td>
@@ -36,7 +36,7 @@
                 <td class="text-muted"><small><?php echo $t->forma_nome ?></small></td>
 
                 <td
-                  class="text-end fw-bold                                                            <?php echo ($t->tipo_fluxo == 'receita') ? 'text-success' : 'text-danger'; ?>">
+                  class="text-end fw-bold <?php echo ($t->tipo_fluxo == 'receita') ? 'text-success' : 'text-danger'; ?>">
                   <?php echo ($t->tipo_fluxo == 'receita' ? '+' : '-') . ' R$ ' . number_format($t->valor, 2, ',', '.') ?>
                 </td>
 
