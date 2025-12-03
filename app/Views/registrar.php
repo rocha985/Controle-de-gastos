@@ -44,7 +44,7 @@
           <input type="password" name="senha" class="form-control" required>
         </div>
 
-        <button type="submit" class="btn btn-primary w-100 btn-lg">Cadastrar</button>
+        <button type="submit" class="btn btn-dark w-100 btn-lg">Cadastrar</button>
       </form>
 
       <div class="text-center mt-3">

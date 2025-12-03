@@ -2,9 +2,6 @@
 
 use CodeIgniter\Router\RouteCollection;
 
-/**
- * @var RouteCollection $routes
- */
 $routes->get("/", "Home::index");
 
 $routes->match(["get", "post"], "/login", "Login::index");
@@ -17,7 +14,7 @@ $routes->group(
     static function ($routes) {
         $routes->get("", "Transacoes::index");
         $routes->post("adicionar", "Transacoes::adicionar");
-        $routes->get("excluir/(:num)", 'Transacoes::excluir/$1');
+        $routes->get("excluir/(:num)", "Transacoes::excluir/$1");
     },
 );
 
@@ -26,9 +23,7 @@ $routes->group(
     ["filter" => "auth:usuario,admin"],
     static function ($routes) {
         $routes->get("", "Relatorios\Anual::index");
-
         $routes->get("mensal", "Relatorios\Mensal::index");
-
         $routes->get("geral", "Relatorios\Geral::index");
     },
 );

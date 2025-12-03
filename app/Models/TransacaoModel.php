@@ -42,7 +42,7 @@ class TransacaoModel extends Model {
       ->join('tipos_transacao t', 'transacoes.tipo_transacao_id = t.id')
       ->join('formas_pagamento f', 'transacoes.forma_pagamento_id = f.id')
       ->where('transacoes.usuario_id', $usuario_id)
-      ->orderBy('transacoes.data DESC, transacoes.id DESC')
+      ->orderBy('transacoes.id', 'DESC')
       ->paginate($perPage);
   }
 
