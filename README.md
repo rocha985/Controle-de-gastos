@@ -1,5 +1,6 @@
 # Controle de Gastos
-![graph](https://github.com/user-attachments/assets/1f6a301f-e78d-4827-892b-10747facd099)
+![Adobe Express - custos](https://github.com/user-attachments/assets/78606083-72fb-4272-a65c-c396704f142c)
+
 
 Sistema desenvolvido em CodeIgniter 4 para gerenciamento de despesas pessoais.
 
