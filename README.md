@@ -2,7 +2,7 @@
 ![Adobe Express - custos](https://github.com/user-attachments/assets/78606083-72fb-4272-a65c-c396704f142c)
 
 
-Sistema desenvolvido em CodeIgniter 4 para gerenciamento de despesas pessoais.
+Sistema desenvolvido com CodeIgniter 4 para gerenciamento de despesas pessoais.
 
 ## Requisitos
 
